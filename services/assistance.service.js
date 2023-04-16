@@ -67,7 +67,7 @@ class AssistanceService{
     const data = await this.getOne(id);
     const result = await data.update({deleted: true});
 
-    return result.deleted;
+    return result.id;
   }
 
 }
