@@ -19,7 +19,7 @@ const settings = {
     }
   },
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  allowedHeaders: ['sessionId', 'Content-Type', 'Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept'],
+  allowedHeaders: ['sessionId', 'Content-Type', 'Access-Control-Allow-Headers', 'Accept', 'Accept-Encoding', 'Authorization', 'Origin, X-Requested-With, Content-Type'],
   preflightContinue: false
 }
 app.use(cors(settings));
