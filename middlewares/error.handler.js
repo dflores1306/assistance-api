@@ -1,6 +1,4 @@
 function logErrors (error, request, response, next){
-  console.log('logError');
-  console.error(error);
   next(error);
 }
 
@@ -14,7 +12,6 @@ function boomErrorHandler (error, request, response, next){
 }
 
 function errorHandler (error, request, response, next){
-  console.log('errorHadler');
   response.status(500).json({
     message: error.message,
     stack: error.stack

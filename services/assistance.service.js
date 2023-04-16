@@ -1,94 +1,73 @@
-const boom = require('@hapi/boom')
+const boom = require('@hapi/boom');
+const { models } = require('../libraries/sequelize');
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 
 class AssistanceService{
-  constructor(){
-    this.assistances = [];
-    this.fillArray();
-  }
-
-  fillArray(){
-    this.assistances = [
-      {
-        id: '1',
-        userId: '0001',
-        userName: 'AAA',
-        date: '2023-01-01',
-        punchIn: '09:00 AM',
-        punchOut: '06:00 PM'
-      },
-      {
-        id: '2',
-        userId: '0002',
-        userName: 'BBB',
-        date: '2023-01-01',
-        punchIn: '09:00 AM',
-        punchOut: '06:00 PM'
-      },
-      {
-        id: '3',
-        userId: '0003',
-        userName: 'CCCC',
-        date: '2023-01-01',
-        punchIn: '09:00 AM',
-        punchOut: '06:00 PM'
-      },
-      {
-        id: '4',
-        userId: '0004',
-        userName: 'DDD',
-        date: '2023-01-01',
-        punchIn: '09:00 AM',
-        punchOut: '06:00 PM'
-      }
-    ]
-  }
+  constructor(){ }
 
   async add(assistance){
-    const newAssistance = {
-      id : (this.assistances.length + 1),
-      ...assistance
-    }
-    this.assistances.push(newAssistance);
+    const newAssistance = await models.Assistance.create(assistance);
     return newAssistance;
   }
 
-  async get(limit, offset){
-    if(limit && offset){
-      return this.assistances;
-    }else {
-      return this.assistances;
+  async get(query){
+    const { limit, offset, filterName, minDate, maxDate } = query;
+    const options = {
+      attributes: [
+        'id', 'userId', 'userName', ['assistance_date', 'date'], 'punchIn', 'punchOut'
+      ],
+      where: {
+        deleted: false
+      },
+      order: [
+        ['id', 'DESC'], ['date', 'DESC']
+      ]
+    };
+
+    if (limit && offset){
+      options.limit = limit;
+      options.offset = offset;
     }
+
+    if (filterName){
+      options.where.userName = {[Op.like]: `%${filterName}%`};
+    }
+    if ((minDate && maxDate)){
+      options.where.assistance_date = {[Op.between]: [minDate, maxDate]};
+    }
+    const result = await models.Assistance.findAll(options);
+    return result;
   }
 
   async getOne(id){
-    const index = this.assistances.findIndex(item => item.id === id);
-    if (index === -1) {
+    const result = await models.Assistance.findOne({
+      where: {
+        deleted: false,
+        id: id
+      },
+      attributes: [
+        'id', 'userId', 'userName', ['assistance_date', 'date'], 'punchIn', 'punchOut'
+      ]
+    });
+    if (!result){
       throw boom.notFound('assistace not found');
     }
-    return this.assistances.find(item => item.id === id);
+    return result;
   }
 
   async update(id, assistace){
-    const index = this.assistances.findIndex(item => item.id === id);
-    if (index === -1) {
-      throw boom.notFound('assistace not found');
-    }
-    const editAssistance = this.assistances[index];
-    this.assistances[index] = {
-      ...editAssistance,
-      ...assistace
-    };
-    return this.assistances[index];
+    const data = await this.getOne(id);
+    const result = await data.update(assistace);
+
+    return result;
   }
 
   async delete(id){
-    const index = this.assistances.findIndex(item => item.id === id);
-    if (index === -1) {
-      throw boom.notFound('assistace not found');
-    }
-    this.assistances.splice(index, 1);
+    const data = await this.getOne(id);
+    const result = await data.update({deleted: true});
 
-    return true;
+    return result.deleted;
   }
 
 }

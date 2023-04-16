@@ -2,41 +2,24 @@ const express = require('express');
 
 const AssistanceService = require('./../services/assistance.service');
 const validationsHandler = require('./../middlewares/validations.handler');
-const { createAssistaceSchema, getAssistaceSchema, updateAssistaceSchema } = require('./../schemas/assistance.schema');
+const { createAssistaceSchema, getAssistaceSchema, updateAssistaceSchema, getQueryAssistaceSchema } = require('./../schemas/assistance.schema');
 
 const router = express.Router();
 const assistanceService = new AssistanceService();
 
-router.get('', async (request, response) => {
-  const { limit, offset } = request.query;
-
-  if (limit && offset) {
-    const assistances = await assistanceService.get(limit, offset);
-    response.status(200).json(assistances);
-  } else {
-    const assistances = await assistanceService.get('', '');
-    response.status(200).json(assistances);
-  }
-});
-
-router.get('/filter', async (request, response) =>{
-  response.json([
-    {
-      userId: '0001',
-      userName: 'AAA',
-      date: '2023-01-01',
-      punchIn: '09:00 AM',
-      punchOut: '06:00 PM'
-    },
-    {
-      userId: '0002',
-      userName: 'BBB',
-      date: '2023-01-01',
-      punchIn: '09:00 AM',
-      punchOut: '06:00 PM'
+router.get('/',
+  validationsHandler(getQueryAssistaceSchema, 'query'),
+  async (request, response, next) => {
+    try {
+      const assistances = await assistanceService.get(request.query);
+      response.status(200).json(assistances);
+    } catch (error) {
+      next(error);
     }
-  ]);
-});
+
+
+  }
+);
 
 router.get('/:id', validationsHandler(getAssistaceSchema, 'params'), async (request, response, next) => {
   try {
