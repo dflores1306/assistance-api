@@ -9,7 +9,7 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
-const whiteList = ["https://dflores1306.github.io/", "http://localhost:4200"];
+const whiteList = ["https://dflores1306.github.io", "http://localhost:4200"];
 const settings = {
   origin: (origin, callback) =>{
     if (whiteList.includes(origin) || !origin){
@@ -18,7 +18,9 @@ const settings = {
       callback(new Error('Not Allowed'));
     }
   },
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE"
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  allowedHeaders: ['sessionId', 'Content-Type', 'Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept'],
+  preflightContinue: false
 }
 app.use(cors(settings));
 
